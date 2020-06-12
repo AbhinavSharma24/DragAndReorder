@@ -1,11 +1,15 @@
 package com.example.dragreorder
 
 import android.annotation.SuppressLint
+import android.media.AudioManager
+import android.media.MediaPlayer
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.ItemTouchHelper.*
@@ -13,6 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.recycler_view_holder.view.*
+import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
 
@@ -59,6 +64,9 @@ class MainActivity : AppCompatActivity() {
         recyclerView.layoutManager = LinearLayoutManager(this) as RecyclerView.LayoutManager
         recyclerView.adapter = MainRecyclerViewAdapter(this)
         itemTouchHelper.attachToRecyclerView(recyclerView)
+
+        Toast.makeText(this, "Long press item to play the sample song!", Toast.LENGTH_SHORT).show()
+
     }
 
     fun startDragging(viewHolder: RecyclerView.ViewHolder) {
@@ -66,9 +74,10 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
+@Suppress("DEPRECATION", "NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 class MainRecyclerViewAdapter(private val activity: MainActivity):
     RecyclerView.Adapter<MainRecyclerViewAdapter.MainRecyclerViewHolder>() {
-    private var emojis = listOf(
+    private var songs = listOf(
         "Ghost, Confetti",
         "Fireflies, Owl City",
         "We are Young, Fun",
@@ -90,22 +99,23 @@ class MainRecyclerViewAdapter(private val activity: MainActivity):
     ).toMutableList()
 
     fun moveItem(from: Int, to: Int) {
-        val fromEmoji = emojis[from]
-        emojis.removeAt(from)
+        val fromEmoji = songs[from]
+        songs.removeAt(from)
         if (to < from) {
-            emojis.add(to, fromEmoji)
+            songs.add(to, fromEmoji)
         } else {
-            emojis.add(to - 1, fromEmoji)
+            songs.add(to - 1, fromEmoji)
         }
     }
 
     override fun getItemCount(): Int {
-        return emojis.size
+        return songs.size
     }
 
     override fun onBindViewHolder(holder: MainRecyclerViewHolder, position: Int) {
-        val emoji = emojis[position]
-        holder.setText(emoji)
+        val song = songs[position]
+        holder.setText(song)
+
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -126,6 +136,29 @@ class MainRecyclerViewAdapter(private val activity: MainActivity):
     class MainRecyclerViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
         fun setText(text: String) {
             itemView.textView.text = text
+
+            itemView.textView.setOnLongClickListener {
+                /*val url = "https://drive.google.com/file/d/0B1HQtcOuMBlnUGFfQUt0VzBSRWM"     //your URL here
+                var mediaPlayer: MediaPlayer? = MediaPlayer().apply {
+                    setAudioStreamType(AudioManager.STREAM_MUSIC)
+                    try {
+                        setDataSource(url)
+                        prepare()   //might take long! (for buffering, etc)
+                        start()
+                    }catch (e : IOException){
+                        Log.d("SongCheck", e.message)
+                        Toast.makeText(itemView.context, e.message, Toast.LENGTH_SHORT).show()
+                    }
+                }
+                mediaPlayer?.release()
+                mediaPlayer = null*/
+
+                val mediaPlayer: MediaPlayer? = MediaPlayer.create(itemView.context, R.raw.yehbaby)
+                mediaPlayer?.start()
+                Toast.makeText(itemView.context, "Song playing, increase the volume!", Toast.LENGTH_SHORT).show()
+
+                return@setOnLongClickListener false
+            }
         }
     }
 }
